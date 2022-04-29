@@ -52,5 +52,9 @@ for i in range (epochs):
     optimizer.step()
     model.zero_grad()
     print(loss)
+    if (epochs+1)%200 == 0 :
+      epoch_list.append(epochs+1)
+      loss_tot.append(loss.detach().numpy())  
 
+plt.plot(epoch_list,loss_tot)
 
