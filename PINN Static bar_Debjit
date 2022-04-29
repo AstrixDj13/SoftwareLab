@@ -35,6 +35,8 @@ p = lambda x: 4 * math.pi**2 * torch.sin(2 * math.pi * x)
 optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
 
 epochs = 200
+epoch_list = []
+loss_tot = []
 for i in range (epochs):
     optimizer.zero_grad()
     
