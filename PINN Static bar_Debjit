@@ -13,20 +13,20 @@ def pinn_model(input,hidden,output):
   torch.nn.Linear(hidden, output))
   return model    
   
-  def get_derivative(y, x):
+def get_derivative(y, x):
   dydx = grad(y, x, torch.ones(x.size()[0], 1),
     create_graph=True,
     retain_graph=True)[0]
   return dydx
   
-  def func(model, x, EA, p):
+def func(model, x, EA, p):
   u = model(x)
   u_x = get_derivative(u, x)
   EAu_xx = get_derivative(EA(x) * u_x, x)
   f = EAu_xx + p(x)
   return f
   
-  model = pinn_model(1, 10, 1)
+model = pinn_model(1, 10, 1)
 u0 = 0
 u1 = 0
 x = torch.linspace(0, 1, 10, requires_grad=True).view(-1, 1)
