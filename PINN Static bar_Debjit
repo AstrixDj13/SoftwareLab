@@ -1,0 +1,56 @@
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from autograd import grad
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+import math
+
+def pinn_model(input,hidden,output):
+  model = torch.nn.Sequential(torch.nn.Linear(input, hidden),
+  torch.nn.Tanh(),
+  torch.nn.Linear(hidden, output))
+  return model    
+  
+  def get_derivative(y, x):
+  dydx = grad(y, x, torch.ones(x.size()[0], 1),
+    create_graph=True,
+    retain_graph=True)[0]
+  return dydx
+  
+  def func(model, x, EA, p):
+  u = model(x)
+  u_x = get_derivative(u, x)
+  EAu_xx = get_derivative(EA(x) * u_x, x)
+  f = EAu_xx + p(x)
+  return f
+  
+  model = pinn_model(1, 10, 1)
+u0 = 0
+u1 = 0
+x = torch.linspace(0, 1, 10, requires_grad=True).view(-1, 1)
+EA = lambda x: 1 +0*x
+p = lambda x: 4 * math.pi**2 * torch.sin(2 * math.pi * x)
+optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
+
+epochs = 200
+for i in range (epochs):
+    optimizer.zero_grad()
+    
+    u0_pred = model(torch.tensor([0.]))
+    u1_pred = model(torch.tensor([1.]))
+    MSE_b =  (u0_pred - u0)**2 + (u1_pred - u1)**2
+    print(MSE_b)
+    f = func(model, x, EA, p)
+    MSE_f = torch.sum(f**2)
+    MSE_b = (u0-u0_pred)**2 + (u1-u1_pred)**2
+    
+    #Total Loss and Backpropagation
+    loss = MSE_b + MSE_f
+    loss.backward()
+    optimizer.step()
+    model.zero_grad()
+    print(loss)
+
+
