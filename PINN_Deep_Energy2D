@@ -96,7 +96,7 @@ def trainModel(model, EA, p, optimizer, epochs):
         costs.append(cost.detach().numpy())
         eps.append(epoch + 1)
 
-        # Backpropagation
+        # Backpropagation_step
         optimizer.zero_grad()
         cost.backward()
         optimizer.step()
