@@ -1,3 +1,7 @@
+"""
+title: Cost function (Elastic energy)
+author: Debjit
+"""
 import torch
 from torch.autograd import grad
 import gaussian
