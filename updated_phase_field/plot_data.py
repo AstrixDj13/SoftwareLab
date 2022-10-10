@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 def plotData(x, y, u, v, s, u_analytical, v_analytical, epochData, costData, trainingError, validationError):
 	fig, ax = plt.subplots(2,2)
@@ -19,7 +20,9 @@ def plotData(x, y, u, v, s, u_analytical, v_analytical, epochData, costData, tra
 	ax[0,1].set_title("Training History")
 	ax[0,1].set_xlabel("Epochs")
 	ax[0,1].set_ylabel("Cost Function")
-	ax[0,1].plot(epochData, costData)
+	# ax[0,1].set_yscale('log')
+	# ax[0,1].yscale("log")
+	ax[0,1].semilogy(epochData, costData)
 
 	# ax[1,1].set_title("Phase Field")
 	# cb = ax[1,1].pcolormesh(x.detach(), y.detach(), s.detach(), cmap='plasma', antialiased=False)

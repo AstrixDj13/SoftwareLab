@@ -57,6 +57,7 @@ def trainModel(model, X, x, y, s0, u0, weights, jacobian, domainLengthX, domainL
 
         #Backpropagation
         loss.backward(retain_graph = True)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 50)
         optimizer.step()
         model.zero_grad()
         optimizer.zero_grad()

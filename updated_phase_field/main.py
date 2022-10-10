@@ -25,13 +25,13 @@ model = PINN_2d.buildModel(size_hidden_dim).to(device)
 print(model)
 
 # Setup optimizer
-optimizer = torch.optim.Adam(model.parameters(), lr=0.002)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.002, weight_decay=1e-3)
 
 ## Mathematical modelling data 
 domainLengthX = 1
 domainLengthY = 1
-numNodesX = 20
-numNodesY = 20
+numNodesX = 30
+numNodesY = 30
 numGPX = 2
 numGPY = 2
 x = torch.linspace(0, domainLengthX, numNodesX)
@@ -69,17 +69,17 @@ Gc = 500 # crack stiffness
 s0 = initialCrack(X, 0.47*domainLengthX, 0.54*domainLengthX, 0.5*domainLengthY, domainLengthY) 
 
 ## Validation
-analyticalSolution = 0
+analyticalSolution = 25
 u_analytical = x>(0.5*domainLengthX)
 u_analytical = u_analytical + 0
 v_analytical = torch.zeros(numGPX * (numNodesX - 1), numGPY * (numNodesY - 1))
 
 # generate a new validation grid
-val_numNodesX = 10
-val_numNodesY = 10
+val_numNodesX = 35
+val_numNodesY = 35
 val_x = torch.linspace(0, domainLengthX, val_numNodesX)
 val_y = torch.linspace(0, domainLengthY, val_numNodesY)
-val_X, val_weights, val_jacobian = gaussian.getGlobalMapping(val_x,val_y,1,1)
+val_X, val_weights, val_jacobian = gaussian.getGlobalMapping(val_x,val_y,2,2)
 val_weights = val_weights.to(device)
 val_jacobian = val_jacobian.to(device)
 val_x = val_X[:,0].view(-1,1).to(device)
@@ -93,7 +93,7 @@ val_s = 1-torch.exp(-(torch.abs(val_x-0.5*domainLengthX)/eps)) # change this to 
 # val_s = initialCrack(val_X, 0.45*domainLengthX, 0.55*domainLengthX, 0.5*domainLengthY, domainLengthY) 
 # val_s =  (val_y>=0.5)*(1 - torch.exp(-(torch.abs(val_x - 0.5 * domainLengthX) / eps))) + (val_y<0.5) 
 # Training loop
-epochs = 2000
+epochs = 1000
 tic = time.time()
 U, s, epochData, costData, trainingError, validationError = PINN_2d.trainModel(model, X, x, y, s0, u0, weights, jacobian, domainLengthX, domainLengthY,
                                                p, E, nu, eps, Gc, optimizer, epochs, val_X, val_x, val_y, val_s, val_weights, val_jacobian, analyticalSolution)
