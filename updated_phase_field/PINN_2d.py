@@ -13,6 +13,7 @@ def buildModel(hidden_dim):
         model.append(torch.nn.Linear(hidden_dim[i],hidden_dim[i+1]))
         model.append(torch.nn.Tanh())
     model.append(torch.nn.Linear(hidden_dim[-1], 2))
+    # model.append(torch.nn.PReLU(num_parameters = 2, init = 0.25))
     
     return model
 
@@ -25,8 +26,8 @@ def predictDisplacements(model, X, u0, domainLengthX, domainLengthY,s0):
     # u = X[:,0]*X[:,1]*z[:,0] # u = 0 at both x = 0 and y = 0 (left and bottom edge)
 
     # v = X[:,0]*X[:,1]*z[:,1] # v = 0 at both x = 0 and y = 0 (left and bottom edge)
-    # v = X[:,1]*z[:,1] # v = 0 only at y = 0 (bottom edge) 
-    v = z[:,1] # v free on both y-edges  
+    v = X[:,1]*z[:,1] # v = 0 only at y = 0 (bottom edge) 
+    # v = z[:,1] # v free on both y-edges  
 
     # s = s0 + z[:,2].view(-1,1)
     U = torch.cat((u.view(-1,1),v.view(-1,1)),1)
@@ -48,8 +49,11 @@ def trainModel(model, X, x, y, s0, u0, weights, jacobian, domainLengthX, domainL
             print(f"Epoch #{i+1}, loss = {loss.detach()}")
         trainingError.append(torch.abs(loss.detach()-analyticalSolution))    
         val_U = predictDisplacements(model,val_X,u0,domainLengthX,domainLengthY,s0)
-        validationCost = cost.costFunction(val_U, val_x,val_y, val_weights, val_jacobian, p, E, nu,val_s,Gc,eps)
+        validationCost = cost.costFunction(val_U, val_x,val_y, val_weights, val_jacobian, p, E, nu,val_s,Gc,eps).detach()
         validationError.append(torch.abs(validationCost-analyticalSolution))
+        # if torch.abs(loss - 25)<2:
+        #    break
+
 
         #Backpropagation
         loss.backward(retain_graph = True)

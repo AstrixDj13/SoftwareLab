@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-def plotData(x, y, u, v, s, epochData, costData, trainingError, validationError):
+def plotData(x, y, u, v, s, u_analytical, v_analytical, epochData, costData, trainingError, validationError):
 	fig, ax = plt.subplots(2,2)
 	for row in range(2):
 	    ax[row,0].set_xlabel("x")
@@ -33,4 +33,37 @@ def plotData(x, y, u, v, s, epochData, costData, trainingError, validationError)
 	ax[1,1].legend()
 
 	fig.tight_layout()
+	plt.show()
+
+	error_u = abs(u.detach()-u_analytical.detach())
+	error_v = abs(v.detach()-v_analytical.detach())
+
+	fig2, ax = plt.subplots(2,2)
+	for row in range(2):
+		for col in range(2):
+	 	   	ax[row,col].set_xlabel("x")
+	 	   	ax[row,col].set_ylabel("y")
+
+	ax[0,0].set_title("$u_{analytical}$")
+	cb = ax[0,0].pcolormesh(x.detach(), y.detach(), u_analytical.detach(), cmap='viridis', antialiased=False)
+	ax[0,0].set_aspect('equal', adjustable='box')
+	fig2.colorbar(cb, ax = ax[0,0])
+
+	ax[1,0].set_title("$v_{analytical}$")
+	cb = ax[1,0].pcolormesh(x.detach(), y.detach(), v_analytical.detach(), cmap='viridis', antialiased=False)
+	fig2.colorbar(cb, ax = ax[1,0])
+	ax[1,0].set_aspect('equal', adjustable='box')
+
+	ax[0,1].set_title("Error: u")
+	cb = ax[0,1].pcolormesh(x.detach(), y.detach(), error_u, cmap='coolwarm', antialiased=False)
+	fig2.colorbar(cb, ax = ax[0,1])
+	ax[0,1].set_aspect('equal', adjustable='box')
+
+
+	ax[1,1].set_title("Error: v")
+	cb = ax[1,1].pcolormesh(x.detach(), y.detach(), error_v, cmap='coolwarm', antialiased=False)
+	fig2.colorbar(cb, ax = ax[1,1])
+	ax[1,1].set_aspect('equal', adjustable='box')
+
+	fig2.tight_layout()
 	plt.show()

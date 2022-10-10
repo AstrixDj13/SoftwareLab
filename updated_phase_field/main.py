@@ -47,7 +47,7 @@ y.requires_grad = True
 X = torch.cat((x, y), 1).to(device)
 
 # Problem data
-E = lambda x, y: 1 + 0 * x + 0 * y
+E = lambda x, y: 100 + 0 * x + 0 * y
 p = lambda x, y: 0  # x*y
 nu = lambda x, y: 0.4
 u0 = 1
@@ -57,14 +57,23 @@ Gc = 500 # crack stiffness
 ## Initial crack field
 # continuous
 # s0 = 1 - torch.exp(-((x - 0.5 * domainLengthX) ** 2 + (y - 0.5 * domainLengthY) ** 2) / eps ** 2)  # point crack
-s0 = 1-torch.exp(-(torch.abs(x-0.5*domainLengthX)/eps)) # line crack
+# s0 = 1-torch.exp(-(torch.abs(x-0.5*domainLengthX)/eps)) # line crack
 # s0 = (y>=0.5)*(1 - torch.exp(-(torch.abs(x - 0.5 * domainLengthX) / eps))) + (y<0.5) # half-line crack in y direction
 # s0 = (x>=0.5)*(1 - torch.exp(-(torch.abs(y - 0.5 * domainLengthY) / eps))) + (x<0.5) # half-line crack in x direction
+# a = y>=1.1
+# b = y<=0.75
+# c = ~(a*b)
+# s0 = (a*b)*(1 - torch.exp(-(torch.abs(x - 0.5 * domainLengthX) / eps))) + c # half-line crack in y direction
+# print(s0)
 # discontinuous
-# s0 = initialCrack(X, 0.48*domainLengthX, 0.53*domainLengthX, 0.5*domainLengthY, domainLengthY) 
+s0 = initialCrack(X, 0.47*domainLengthX, 0.54*domainLengthX, 0.5*domainLengthY, domainLengthY) 
 
 ## Validation
 analyticalSolution = 0
+u_analytical = x>(0.5*domainLengthX)
+u_analytical = u_analytical + 0
+v_analytical = torch.zeros(numGPX * (numNodesX - 1), numGPY * (numNodesY - 1))
+
 # generate a new validation grid
 val_numNodesX = 10
 val_numNodesY = 10
@@ -80,15 +89,18 @@ val_x.requires_grad = True
 val_y.requires_grad = True
 val_X = torch.cat((val_x,val_y),1).to(device)
 val_s = 1-torch.exp(-(torch.abs(val_x-0.5*domainLengthX)/eps)) # change this to same as s0 when testing different configurations
-
+# val_s = 1 - torch.exp(-((val_x - 0.5 * domainLengthX) ** 2 + (val_y - 0.5 * domainLengthY) ** 2) / eps ** 2) 
+# val_s = initialCrack(val_X, 0.45*domainLengthX, 0.55*domainLengthX, 0.5*domainLengthY, domainLengthY) 
+# val_s =  (val_y>=0.5)*(1 - torch.exp(-(torch.abs(val_x - 0.5 * domainLengthX) / eps))) + (val_y<0.5) 
 # Training loop
-epochs = 1000
+epochs = 2000
 tic = time.time()
 U, s, epochData, costData, trainingError, validationError = PINN_2d.trainModel(model, X, x, y, s0, u0, weights, jacobian, domainLengthX, domainLengthY,
                                                p, E, nu, eps, Gc, optimizer, epochs, val_X, val_x, val_y, val_s, val_weights, val_jacobian, analyticalSolution)
 toc = time.time()
 print(f"Final cost:{costData[-1]}")
 print(f"Total time elapsed: {toc-tic} seconds")
+print(f"Min. cost:{min(costData)}")
 
 ## Surface plots
 # reshaping vectors in grid form for 2d plots
@@ -97,6 +109,7 @@ y = y.reshape(numGPX * (numNodesX - 1), numGPY * (numNodesY - 1))
 u = U[:, 0].reshape(numGPX * (numNodesX - 1), numGPY * (numNodesY - 1))
 v = U[:, 1].reshape(numGPX * (numNodesX - 1), numGPY * (numNodesY - 1))
 s = s.reshape(numGPX * (numNodesX - 1), numGPY * (numNodesY - 1))
+u_analytical = u_analytical.reshape(numGPX * (numNodesX - 1), numGPY * (numNodesY - 1))
 
 # plot initial field
 s0 = s0.reshape(numGPX * (numNodesX - 1), numGPY * (numNodesY - 1))
@@ -105,4 +118,4 @@ plt.title("Initial Phase Field")
 plt.colorbar(cb)
 plt.show()
 
-plot_data.plotData(x.cpu(), y.cpu(), u.cpu(), v.cpu(), s.cpu(), epochData, costData, trainingError, validationError)
+plot_data.plotData(x.cpu(), y.cpu(), u.cpu(), v.cpu(), s.cpu(), u_analytical.cpu(), v_analytical.cpu(), epochData, costData, trainingError, validationError)

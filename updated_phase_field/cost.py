@@ -35,9 +35,15 @@ def getElasticEnergy(u, x,y, s, weight, jacobian, E, nu, Gc, eps):
     G = 0.5*E(x,y)/(1 + nu(x,y))
     K = G/(1 - 2*nu(x,y))
     eta = 1e-10 # artificial crack stiffness
-    phi_plus = 0.5*K*(((eux + evy - torch.abs(eux + evy))*0.5)**2)
-    phi_minus = 0.5*K*(((eux + evy + torch.abs(eux + evy))*0.5)**2) + G*(eux**2 + evy**2 + 0.5*(euy + evx)**2)
-    I1 = (s**2 + eta)*(phi_plus + phi_minus)
+    
+    Normal_strain_energy = 0.5 * E(x,y)/(1 - nu(x,y)**2) * (eux**2 + evy**2 + 2*nu(x,y)*eux*evy)
+    Shear_strain_energy = 0.25 * E(x,y)/(1 + nu(x,y))  * ((euy + evx)**2)
+    IE_density = Normal_strain_energy + Shear_strain_energy
+
+    # phi_plus = 0.5*K*(((eux + evy + torch.abs(eux + evy))*0.5)**2) + G*(eux**2 + evy**2 + 0.5*(euy + evx)**2)
+    phi_minus = 0.5*K*(((eux + evy - torch.abs(eux + evy))*0.5)**2)
+    phi_plus = IE_density - phi_minus
+    I1 = (s**2 + eta)*phi_plus + phi_minus
     # I2 = Gc*(0.25*((1 - s)**2)/eps + eps*(sx**2 + sy**2))
     Elatic_Energy_density = I1 
     elastic_energy = gaussian.gaussianIntegration(Elatic_Energy_density, weight, jacobian) 
