@@ -30,8 +30,8 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.002, weight_decay=1e-3)
 ## Mathematical modelling data 
 domainLengthX = 1
 domainLengthY = 1
-numNodesX = 30
-numNodesY = 30
+numNodesX = 31
+numNodesY = 31
 numGPX = 4
 numGPY = 4
 x = torch.linspace(0, domainLengthX, numNodesX)
@@ -52,7 +52,7 @@ p = lambda x, y: 0  # x*y
 nu = lambda x, y: 0.4
 u0 = 1
 eps = 0.05 # length parameter for continuous cracks
-Gc = 500 # crack stiffness
+Gc = 0.5 # crack stiffness
 
 ## Initial crack field
 # continuous
@@ -66,8 +66,8 @@ Gc = 500 # crack stiffness
 # s0 = (a*b)*(1 - torch.exp(-(torch.abs(x - 0.5 * domainLengthX) / eps))) + c # half-line crack in y direction
 # print(s0)
 # discontinuous
-s0 = initialCrack(X, 0.47*domainLengthX, 0.54*domainLengthX, 0.5*domainLengthY, domainLengthY) 
-
+# s0 = initialCrack(X, 0.47*domainLengthX, 0.54*domainLengthX, 0.5*domainLengthY, domainLengthY)
+s0 = initialCrack(X, 0.5*domainLengthX, domainLengthX, 0.47*domainLengthY, 0.53*domainLengthY)
 ## Validation
 analyticalSolution = 25
 u_analytical = x>(0.5*domainLengthX)
@@ -75,8 +75,8 @@ u_analytical = u_analytical + 0
 v_analytical = torch.zeros(numGPX * (numNodesX - 1), numGPY * (numNodesY - 1))
 
 # generate a new validation grid
-val_numNodesX = 40
-val_numNodesY = 40
+val_numNodesX = 4
+val_numNodesY = 4
 val_x = torch.linspace(0, domainLengthX, val_numNodesX)
 val_y = torch.linspace(0, domainLengthY, val_numNodesY)
 val_X, val_weights, val_jacobian = gaussian.getGlobalMapping(val_x,val_y,4,4)
@@ -93,10 +93,11 @@ val_s = 1-torch.exp(-(torch.abs(val_x-0.5*domainLengthX)/eps)) # change this to 
 # val_s = initialCrack(val_X, 0.45*domainLengthX, 0.55*domainLengthX, 0.5*domainLengthY, domainLengthY) 
 # val_s =  (val_y>=0.5)*(1 - torch.exp(-(torch.abs(val_x - 0.5 * domainLengthX) / eps))) + (val_y<0.5) 
 # Training loop
-epochs = 100
+epochs = 150
+ts = 1
 tic = time.time()
 U, s, epochData, costData, trainingError, validationError = PINN_2d.trainModel(model, X, x, y, s0, u0, weights, jacobian, domainLengthX, domainLengthY,
-                                               p, E, nu, eps, Gc, optimizer, epochs, val_X, val_x, val_y, val_s, val_weights, val_jacobian, analyticalSolution)
+                                               p, E, nu, eps, Gc, optimizer, epochs, val_X, val_x, val_y, val_s, val_weights, val_jacobian, analyticalSolution, ts)
 toc = time.time()
 print(f"Final cost:{costData[-1]}")
 print(f"Total time elapsed: {toc-tic} seconds")

@@ -29,7 +29,7 @@ def plotData(x, y, u, v, s, u_analytical, v_analytical, epochData, costData, tra
 	ax[1,1].set_title("Errors")
 	ax[1,1].set_xlabel("Epochs")
 	ax[1,1].set_ylabel("Error")
-	ax[1,1].semilogy(epochData, validationError, color = 'r', label = "Validation Error")
+	# ax[1,1].semilogy(epochData, validationError, color = 'r', label = "Validation Error")
 	ax[1,1].semilogy(epochData, trainingError, color = 'b', label = "Training Error")
 	ax[1,1].legend()
 
