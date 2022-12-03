@@ -51,8 +51,8 @@ E = lambda x, y: 100 + 0 * x + 0 * y
 p = lambda x, y: 0  # x*y
 nu = lambda x, y: 0.4
 u0 = 1
-eps = 0.05 # length parameter for continuous cracks
-Gc = 0.5 # crack stiffness
+eps = 0.03 # length parameter for continuous cracks
+Gc = 9.4 # crack stiffness
 
 ## Initial crack field
 # continuous
@@ -66,10 +66,10 @@ Gc = 0.5 # crack stiffness
 # s0 = (a*b)*(1 - torch.exp(-(torch.abs(x - 0.5 * domainLengthX) / eps))) + c # half-line crack in y direction
 # print(s0)
 # discontinuous
-# s0 = initialCrack(X, 0.47*domainLengthX, 0.54*domainLengthX, 0.5*domainLengthY, domainLengthY)
-s0 = initialCrack(X, 0.5*domainLengthX, domainLengthX, 0.47*domainLengthY, 0.53*domainLengthY)
+s0 = initialCrack(X, 0.47*domainLengthX, 0.53*domainLengthX, 0.5*domainLengthY, domainLengthY)
+# s0 = initialCrack(X, 0.5*domainLengthX, domainLengthX, 0.47*domainLengthY, 0.53*domainLengthY) #horizontal crack 
 ## Validation
-analyticalSolution = 25
+analyticalSolution = 0
 u_analytical = x>(0.5*domainLengthX)
 u_analytical = u_analytical + 0
 v_analytical = torch.zeros(numGPX * (numNodesX - 1), numGPY * (numNodesY - 1))
@@ -93,7 +93,7 @@ val_s = 1-torch.exp(-(torch.abs(val_x-0.5*domainLengthX)/eps)) # change this to 
 # val_s = initialCrack(val_X, 0.45*domainLengthX, 0.55*domainLengthX, 0.5*domainLengthY, domainLengthY) 
 # val_s =  (val_y>=0.5)*(1 - torch.exp(-(torch.abs(val_x - 0.5 * domainLengthX) / eps))) + (val_y<0.5) 
 # Training loop
-epochs = 150
+epochs = 1500
 ts = 1
 tic = time.time()
 U, s, epochData, costData, trainingError, validationError = PINN_2d.trainModel(model, X, x, y, s0, u0, weights, jacobian, domainLengthX, domainLengthY,
@@ -114,7 +114,7 @@ u_analytical = u_analytical.reshape(numGPX * (numNodesX - 1), numGPY * (numNodes
 
 # plot initial field
 s0 = s0.reshape(numGPX * (numNodesX - 1), numGPY * (numNodesY - 1))
-cb = plt.pcolormesh(x.cpu().detach(), y.cpu().detach(), s.cpu().detach(), cmap='plasma', antialiased=False)
+cb = plt.pcolormesh(x.cpu().detach(), y.cpu().detach(), s.cpu().detach(), cmap='nipy_spectral', antialiased=False)
 plt.title("Initial Phase Field")
 plt.colorbar(cb)
 plt.show()

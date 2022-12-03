@@ -29,10 +29,11 @@ def predictDisplacements(model, X, u0, domainLengthX, domainLengthY,s0):
     # v = X[:,0]*X[:,1]*z[:,1] # v = 0 at both x = 0 and y = 0 (left and bottom edge)
     # v = X[:,1]*z[:,1] # v = 0 only at y = 0 (bottom edge) 
     # v = z[:,1] # v free on both y-edges
-    # u = X[:,0]*z[:,0]  
-    u = z[:,0]
-    #v = (domainLengthX - 3*X[:,0])*u0/domainLengthX + (domainLengthX - X[:,0])*X[:,0]*z[:,1] #shear
-    v = ((domainLengthX - X[:,0]*z[:,1])*u0 - X[:,0]*u0)/(domainLengthX*(1 - X[:,0]*z[:,1]))
+    u = X[:,0]*z[:,0]  
+    # u = z[:,0]
+    # v = (domainLengthX - 3*X[:,0])*u0/domainLengthX + (domainLengthX - X[:,0])*X[:,0]*z[:,1] #shear
+    v = (X[:,0] - domainLengthX)*X[:,0]*z[:,1] - X[:,0]*u0/domainLengthX 
+    # v = ((domainLengthX - X[:,0]*z[:,1])*u0 - X[:,0]*u0)/(domainLengthX*(1 - X[:,0]*z[:,1]))
     #s = s0 + torch.nn.Sigmoid(z[:,2]).view(-1,1)
     ds = torch.nn.Sigmoid()(z[:,2].view(-1,1))
     s = s0 - ds
