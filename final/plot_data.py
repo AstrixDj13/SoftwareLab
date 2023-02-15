@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
 
 def plotData(x, y, u, v, s, u_analytical, v_analytical, epochData, costData, trainingError, validationError, elasticEnergy, crackEnergy):
 	fig, ax = plt.subplots(2,2)

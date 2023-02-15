@@ -1,11 +1,13 @@
 """
-title: Gaussian Mapping and Gaussian Integration upto 5 Gauss points
-author: Hritik
+Gaussian Mapping and Gaussian Integration upto 5 Gauss points
 """
 import torch
 import math
 
 def getGaussianVariables(numGP):
+	""" Calculates the position of the gauss points and their corresponding weights
+		based on the number of gauss points given as parameter
+		Can handle upto 5 gauss points """
 	if numGP == 1:
 		xi_GP = torch.tensor([0.])
 		weights = torch.tensor([2.])
@@ -27,8 +29,11 @@ def getGaussianVariables(numGP):
 	return [xi_GP, weights]
 
 def getGlobalMapping(x, y, numGP_x, numGP_y):
-	numIntervals_x = x.size(dim=0)-1 # number of intervals along x = number of nodes along x - 1 	
-	numIntervals_y = y.size(dim=0)-1 # number of intervals along y = number of nodes along y - 1 	
+	""" Maps the local coordinates to global coordinates using linear shape functions
+		and returns the corresponding global coordinates, global weights and jacobian """
+	# In each direction, number of intervals = number of nodes - 1
+	numIntervals_x = x.size(dim=0)-1	
+	numIntervals_y = y.size(dim=0)-1 
 	numXi = numIntervals_x*numGP_x
 	numEta = numIntervals_y*numGP_y
 	global_xi = torch.zeros(numXi)
@@ -70,5 +75,6 @@ def getGlobalMapping(x, y, numGP_x, numGP_y):
 	return global_map, global_weights, jacobian
 
 def gaussianIntegration(integrand, weights, jacobian):
+	# Performs gaussian integration based on the values of integrand, weights and jacobian
 	integral = torch.sum(integrand*jacobian*(weights[:,0]*weights[:,1]).view(-1,1))
 	return integral
